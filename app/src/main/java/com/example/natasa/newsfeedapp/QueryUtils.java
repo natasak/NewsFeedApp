@@ -1,19 +1,31 @@
 package com.example.natasa.newsfeedapp;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.List;
+
+import static com.example.natasa.newsfeedapp.MainActivity.LOG_TAG;
+
+/**
+ * Helper methods related to requesting and receiving news data from The Guardian.
+ */
 
 public class QueryUtils {
 
-    /** JSON response for
-     * https://content.guardianapis.com/search?section=travel&order-by=newest&show-tags=contributor&q=travel&api-key=...
-     */
-    private static final String SAMPLE_JSON_RESPONSE = "{\"response\":{\"status\":\"ok\",\"userTier\":\"developer\",\"total\":21014,\"startIndex\":1,\"pageSize\":10,\"currentPage\":1,\"pages\":2102,\"orderBy\":\"newest\",\"results\":[{\"id\":\"travel/2018/jul/17/robben-island-cape-town-south-africa-freedom-swim\",\"type\":\"article\",\"sectionId\":\"travel\",\"sectionName\":\"Travel\",\"webPublicationDate\":\"2018-07-17T09:00:01Z\",\"webTitle\":\"The Freedom Swim: from Mandela’s Robben Island to the Cape Town shore\",\"webUrl\":\"https://www.theguardian.com/travel/2018/jul/17/robben-island-cape-town-south-africa-freedom-swim\",\"apiUrl\":\"https://content.guardianapis.com/travel/2018/jul/17/robben-island-cape-town-south-africa-freedom-swim\",\"tags\":[],\"isHosted\":false,\"pillarId\":\"pillar/lifestyle\",\"pillarName\":\"Lifestyle\"},{\"id\":\"travel/2018/jul/17/family-trip-cirali-turkey-beaches-mountains-food-return-trip\",\"type\":\"article\",\"sectionId\":\"travel\",\"sectionName\":\"Travel\",\"webPublicationDate\":\"2018-07-17T05:30:57Z\",\"webTitle\":\"An old flame: a return trip to the beaches and mountains of Çıralı, Turkey\",\"webUrl\":\"https://www.theguardian.com/travel/2018/jul/17/family-trip-cirali-turkey-beaches-mountains-food-return-trip\",\"apiUrl\":\"https://content.guardianapis.com/travel/2018/jul/17/family-trip-cirali-turkey-beaches-mountains-food-return-trip\",\"tags\":[{\"id\":\"profile/andrew-bostock\",\"type\":\"contributor\",\"webTitle\":\"Andrew Bostock\",\"webUrl\":\"https://www.theguardian.com/profile/andrew-bostock\",\"apiUrl\":\"https://content.guardianapis.com/profile/andrew-bostock\",\"references\":[],\"bio\":\"<p><a href=\\\"http://www.bgtw.org/andrew-bostock.html\\\">Andrew Bostock</a> first travelled to Greece over 25 years ago, and has lived in the country. He is the author of the Bradt Guide to the Peloponnese region. <a href=\\\"https://twitter.com/andybostock\\\">@andybostock</a></p>\",\"firstName\":\"bostock\",\"lastName\":\"andrew\"}],\"isHosted\":false,\"pillarId\":\"pillar/lifestyle\",\"pillarName\":\"Lifestyle\"},{\"id\":\"travel/2018/jul/14/wingly-flight-sharing-channel\",\"type\":\"article\",\"sectionId\":\"travel\",\"sectionName\":\"Travel\",\"webPublicationDate\":\"2018-07-14T06:00:37Z\",\"webTitle\":\"Wingly: will the ‘Uber of the skies’ take off?\",\"webUrl\":\"https://www.theguardian.com/travel/2018/jul/14/wingly-flight-sharing-channel\",\"apiUrl\":\"https://content.guardianapis.com/travel/2018/jul/14/wingly-flight-sharing-channel\",\"tags\":[{\"id\":\"profile/rupertjones\",\"type\":\"contributor\",\"webTitle\":\"Rupert Jones\",\"webUrl\":\"https://www.theguardian.com/profile/rupertjones\",\"apiUrl\":\"https://content.guardianapis.com/profile/rupertjones\",\"references\":[],\"bio\":\"<p>Rupert Jones is the deputy editor of the Guardian's <a href=\\\"http://www.guardian.co.uk/theguardian/money\\\"> money section</a>. He has also worked as a personal finance correspondent for the <a href=\\\"http://www.guardian.co.uk/theguardian\\\">Guardian</a></p>\",\"bylineImageUrl\":\"https://uploads.guim.co.uk/2017/12/27/Rupert-Jones.jpg\",\"bylineLargeImageUrl\":\"https://uploads.guim.co.uk/2017/12/27/Rupert_Jones,_L.png\",\"firstName\":\"Rupert\",\"lastName\":\"Jones\"}],\"isHosted\":false,\"pillarId\":\"pillar/lifestyle\",\"pillarName\":\"Lifestyle\"},{\"id\":\"travel/2018/jul/14/holiday-guide-cantal-france-best-restaurants-hotels\",\"type\":\"article\",\"sectionId\":\"travel\",\"sectionName\":\"Travel\",\"webPublicationDate\":\"2018-07-14T06:00:34Z\",\"webTitle\":\"Cantal, France, holiday guide: what to see plus the best restaurants and hotels\",\"webUrl\":\"https://www.theguardian.com/travel/2018/jul/14/holiday-guide-cantal-france-best-restaurants-hotels\",\"apiUrl\":\"https://content.guardianapis.com/travel/2018/jul/14/holiday-guide-cantal-france-best-restaurants-hotels\",\"tags\":[{\"id\":\"profile/johnbrunton\",\"type\":\"contributor\",\"webTitle\":\"John Brunton\",\"webUrl\":\"https://www.theguardian.com/profile/johnbrunton\",\"apiUrl\":\"https://content.guardianapis.com/profile/johnbrunton\",\"references\":[],\"bio\":\"<p>John Brunton is a regular contributor to The Guardian, writing and taking photographs on travel, food and wine. Based in Paris and Venice, as well as travelling regularly in South East Asia he blogs at <a href=\\\"http://www.thewinetattoo.com\\\">thewinetattoo.com</a> and posts on Twitter <a href=\\\"https://twitter.com/thewinetattoo\\\">@thewinetattoo</a></p>\",\"firstName\":\"brunton\",\"lastName\":\"\"}],\"isHosted\":false,\"pillarId\":\"pillar/lifestyle\",\"pillarName\":\"Lifestyle\"},{\"id\":\"travel/2018/jul/13/albania-kala-festival-new-younger-holidaymakers-beaches\",\"type\":\"article\",\"sectionId\":\"travel\",\"sectionName\":\"Travel\",\"webPublicationDate\":\"2018-07-13T05:30:02Z\",\"webTitle\":\"Kala festival, Albania: party time in what feels like a paradise\",\"webUrl\":\"https://www.theguardian.com/travel/2018/jul/13/albania-kala-festival-new-younger-holidaymakers-beaches\",\"apiUrl\":\"https://content.guardianapis.com/travel/2018/jul/13/albania-kala-festival-new-younger-holidaymakers-beaches\",\"tags\":[{\"id\":\"profile/will-coldwell\",\"type\":\"contributor\",\"webTitle\":\"Will Coldwell\",\"webUrl\":\"https://www.theguardian.com/profile/will-coldwell\",\"apiUrl\":\"https://content.guardianapis.com/profile/will-coldwell\",\"references\":[],\"bio\":\"<p>Will Coldwell is a reporter for Guardian Travel.</p>\",\"bylineImageUrl\":\"https://static.guim.co.uk/sys-images/Education/Clearing_Pix/furniture/2012/10/5/1349435287443/will-coldwell-003.jpg\",\"firstName\":\"coldwell\",\"lastName\":\"will\",\"twitterHandle\":\"will_coldwell\"}],\"isHosted\":false,\"pillarId\":\"pillar/lifestyle\",\"pillarName\":\"Lifestyle\"},{\"id\":\"travel/2018/jul/12/england-fans-plan-holiday-escapes-world-cup-semi-final-defeat-croatia\",\"type\":\"article\",\"sectionId\":\"travel\",\"sectionName\":\"Travel\",\"webPublicationDate\":\"2018-07-12T17:22:18Z\",\"webTitle\":\"England fans plan holidays after World Cup semi-final defeat\",\"webUrl\":\"https://www.theguardian.com/travel/2018/jul/12/england-fans-plan-holiday-escapes-world-cup-semi-final-defeat-croatia\",\"apiUrl\":\"https://content.guardianapis.com/travel/2018/jul/12/england-fans-plan-holiday-escapes-world-cup-semi-final-defeat-croatia\",\"tags\":[{\"id\":\"profile/isabelchoat\",\"type\":\"contributor\",\"webTitle\":\"Isabel Choat\",\"webUrl\":\"https://www.theguardian.com/profile/isabelchoat\",\"apiUrl\":\"https://content.guardianapis.com/profile/isabelchoat\",\"references\":[],\"bio\":\"<p>Isabel Choat is a <a href=\\\"http://www.guardian.co.uk/travel\\\">travel</a> editor for the Guardian</p>\",\"firstName\":\"choat\",\"lastName\":\"\"}],\"isHosted\":false,\"pillarId\":\"pillar/lifestyle\",\"pillarName\":\"Lifestyle\"},{\"id\":\"travel/2018/jul/12/best-uk-outdoor-family-culture-trips-readers-tips\",\"type\":\"article\",\"sectionId\":\"travel\",\"sectionName\":\"Travel\",\"webPublicationDate\":\"2018-07-12T05:30:32Z\",\"webTitle\":\"10 of the best UK outdoor family culture trips: readers’ travel tips\",\"webUrl\":\"https://www.theguardian.com/travel/2018/jul/12/best-uk-outdoor-family-culture-trips-readers-tips\",\"apiUrl\":\"https://content.guardianapis.com/travel/2018/jul/12/best-uk-outdoor-family-culture-trips-readers-tips\",\"tags\":[{\"id\":\"profile/guardian-readers\",\"type\":\"contributor\",\"webTitle\":\"Guardian readers\",\"webUrl\":\"https://www.theguardian.com/profile/guardian-readers\",\"apiUrl\":\"https://content.guardianapis.com/profile/guardian-readers\",\"references\":[],\"bio\":\"<p>The Guardian readers contributor tag is applied to any content that is solely or partly created by you, our readers. It includes projects, galleries and stories involving data, photography, perspectives and more. Thank you for your ongoing inspiration and participation</p>\",\"firstName\":\"readers\",\"lastName\":\"guardian\"}],\"isHosted\":false,\"pillarId\":\"pillar/lifestyle\",\"pillarName\":\"Lifestyle\"},{\"id\":\"travel/2018/jul/11/send-us-a-tip-on-road-trips-worldwide-to-win-a-200-hotel-voucher\",\"type\":\"article\",\"sectionId\":\"travel\",\"sectionName\":\"Travel\",\"webPublicationDate\":\"2018-07-11T09:22:25Z\",\"webTitle\":\"Send us a tip on road trips worldwide to win a £200 hotel voucher\",\"webUrl\":\"https://www.theguardian.com/travel/2018/jul/11/send-us-a-tip-on-road-trips-worldwide-to-win-a-200-hotel-voucher\",\"apiUrl\":\"https://content.guardianapis.com/travel/2018/jul/11/send-us-a-tip-on-road-trips-worldwide-to-win-a-200-hotel-voucher\",\"tags\":[],\"isHosted\":false,\"pillarId\":\"pillar/lifestyle\",\"pillarName\":\"Lifestyle\"},{\"id\":\"travel/2018/jul/11/wild-swimming-lake-district-brecon-beacons-cairngorms\",\"type\":\"article\",\"sectionId\":\"travel\",\"sectionName\":\"Travel\",\"webPublicationDate\":\"2018-07-11T05:30:03Z\",\"webTitle\":\"Strokes of genius: the beauty and calm of wild swimming\",\"webUrl\":\"https://www.theguardian.com/travel/2018/jul/11/wild-swimming-lake-district-brecon-beacons-cairngorms\",\"apiUrl\":\"https://content.guardianapis.com/travel/2018/jul/11/wild-swimming-lake-district-brecon-beacons-cairngorms\",\"tags\":[{\"id\":\"profile/danielstart\",\"type\":\"contributor\",\"webTitle\":\"Daniel Start\",\"webUrl\":\"https://www.theguardian.com/profile/danielstart\",\"apiUrl\":\"https://content.guardianapis.com/profile/danielstart\",\"references\":[],\"bio\":\"<p>Daniel Start is a travel writer, photographer and environmental consultant. He is the author of numerous books on wild swimming and winner of the Writers' Guild Award for Non-Fiction</p>\",\"bylineImageUrl\":\"https://static.guim.co.uk/sys-images/Guardian/Pix/pictures/2013/7/18/1374146608256/Daniel-Start.jpg\",\"firstName\":\"start\",\"lastName\":\"\"},{\"id\":\"profile/alexandra-heminsley\",\"type\":\"contributor\",\"webTitle\":\"Alexandra Heminsley\",\"webUrl\":\"https://www.theguardian.com/profile/alexandra-heminsley\",\"apiUrl\":\"https://content.guardianapis.com/profile/alexandra-heminsley\",\"references\":[],\"bio\":\"<p>Alexandra Heminsley is a freelance journalist and author. She is contributing editor at Elle magazine and writes for Red, Grazia, and Stylist. Her second book, Running Like a Girl, is published by Windmill</p>\",\"bylineImageUrl\":\"https://static.guim.co.uk/sys-images/Guardian/Pix/pictures/2012/3/1/1330628773698/Alexandra_heminsley.jpg\",\"firstName\":\"heminsley\",\"lastName\":\"alexandra\"},{\"id\":\"profile/gemma-cairney\",\"type\":\"contributor\",\"webTitle\":\"Gemma Cairney\",\"webUrl\":\"https://www.theguardian.com/profile/gemma-cairney\",\"apiUrl\":\"https://content.guardianapis.com/profile/gemma-cairney\",\"references\":[],\"bio\":\"<p>Gemma Cairney is an author and broadcaster.<br></p>\",\"bylineImageUrl\":\"https://uploads.guim.co.uk/2018/01/03/Gemma-Cairney.jpg\",\"bylineLargeImageUrl\":\"https://uploads.guim.co.uk/2018/01/03/Gemma_Cairney,_L.png\",\"firstName\":\"Gemma\",\"lastName\":\"Cairney\"},{\"id\":\"profile/katerew\",\"type\":\"contributor\",\"webTitle\":\"Kate Rew\",\"webUrl\":\"https://www.theguardian.com/profile/katerew\",\"apiUrl\":\"https://content.guardianapis.com/profile/katerew\",\"references\":[],\"bio\":\"<p>Kate Rew is author of Wild Swim (Guardian Books, £12.99) and founder of the<br />Outdoor Swimming Society</p>\",\"bylineImageUrl\":\"https://static.guim.co.uk/sys-images/Guardian/Pix/pictures/2008/08/15/katerew.jpg\",\"firstName\":\"rew\",\"lastName\":\"kate\"}],\"isHosted\":false,\"pillarId\":\"pillar/lifestyle\",\"pillarName\":\"Lifestyle\"},{\"id\":\"travel/2018/jul/10/suffolk-broads-family-boating-holiday-canoeing-river-waveney\",\"type\":\"article\",\"sectionId\":\"travel\",\"sectionName\":\"Travel\",\"webPublicationDate\":\"2018-07-10T05:30:35Z\",\"webTitle\":\"Broads horizons\",\"webUrl\":\"https://www.theguardian.com/travel/2018/jul/10/suffolk-broads-family-boating-holiday-canoeing-river-waveney\",\"apiUrl\":\"https://content.guardianapis.com/travel/2018/jul/10/suffolk-broads-family-boating-holiday-canoeing-river-waveney\",\"tags\":[{\"id\":\"profile/joanneoconnor\",\"type\":\"contributor\",\"webTitle\":\"Joanne O'Connor\",\"webUrl\":\"https://www.theguardian.com/profile/joanneoconnor\",\"apiUrl\":\"https://content.guardianapis.com/profile/joanneoconnor\",\"references\":[],\"bio\":\"<p>Joanne O'Connor is a journalist and travel writer. She is the Observer's former travel editor.</p>\",\"bylineImageUrl\":\"https://static.guim.co.uk/sys-images/Guardian/Pix/contributor/2015/10/6/1444150540527/Joanne-O-Connor.jpg\",\"bylineLargeImageUrl\":\"https://uploads.guim.co.uk/2017/10/06/Joanne-O'Connor,-R.png\",\"firstName\":\"o'connor\",\"lastName\":\"\"}],\"isHosted\":false,\"pillarId\":\"pillar/lifestyle\",\"pillarName\":\"Lifestyle\"}]}}";
 
     /**
      * Create a private constructor because no one should ever create a {@link QueryUtils} object.
@@ -24,21 +36,93 @@ public class QueryUtils {
     }
 
     /**
+     * Make an HTTP request to the given URL and return a String as the response.
+     */
+    private static String makeHttpRequest(URL url) throws IOException {
+        String jsonResponse = "";
+
+        // If the URL is null, then return early.
+        if (url == null) {
+            return jsonResponse;
+        }
+
+        HttpURLConnection urlConnection = null;
+        InputStream inputStream = null;
+        try {
+            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setReadTimeout(10000 /* milliseconds */);
+            urlConnection.setConnectTimeout(15000 /* milliseconds */);
+            urlConnection.setRequestMethod("GET");
+            urlConnection.connect();
+
+            // If the request was successful (response code 200),
+            // then read the input stream and parse the response.
+            if (urlConnection.getResponseCode() == 200) {
+                inputStream = urlConnection.getInputStream();
+                jsonResponse = readFromStream(inputStream);
+            } else {
+                Log.e(LOG_TAG, "Error response code: " + urlConnection.getResponseCode());
+            }
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Problem retrieving the news JSON results.", e);
+        } finally {
+            if (urlConnection != null) {
+                urlConnection.disconnect();
+            }
+            if (inputStream != null) {
+                // Closing the input stream could throw an IOException, which is why
+                // the makeHttpRequest(URL url) method signature specifies than an IOException
+                // could be thrown.
+                inputStream.close();
+            }
+        }
+        return jsonResponse;
+    }
+
+
+    /**
+     * Convert the {@link InputStream} into a String which contains the
+     * whole JSON response from the server.
+     */
+    private static String readFromStream(InputStream inputStream) throws IOException {
+        StringBuilder output = new StringBuilder();
+        if (inputStream != null) {
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charset.forName("UTF-8"));
+            BufferedReader reader = new BufferedReader(inputStreamReader);
+            String line = reader.readLine();
+            while (line != null) {
+                output.append(line);
+                line = reader.readLine();
+            }
+        }
+        return output.toString();
+    }
+
+
+
+
+
+
+    /**
      * Return a list of {@link News} objects that has been built up from
      * parsing a JSON response.
      */
-    public static ArrayList<News> extractNews() {
+    public static List<News> extractFeatureFromJson(String articleJSON) {
+        // If the JSON string is empty or null, then return early
+        if (TextUtils.isEmpty(articleJSON)) {
+            return null;
+        }
 
-        // Create an empty ArrayList that we can start adding news to
-        ArrayList<News> news = new ArrayList<>();
+        // Create an empty ArrayList (List) that we can start adding news to
+        List<News> news = new ArrayList<>();
 
-        // Try to parse the SAMPLE_JSON_RESPONSE. If there's a problem with the way the JSON
+        // Try to parse the JSON response string. If there's a problem with the way the JSON
         // is formatted, a JSONException exception object will be thrown.
         // Catch the exception so the app doesn't crash, and print the error message to the logs.
         try {
 
             // Create JSONObject from the JON response string
-            JSONObject baseJsonResponse = new JSONObject(SAMPLE_JSON_RESPONSE);
+            JSONObject baseJsonResponse = new JSONObject(articleJSON);
 
             // Extract "response" JSON Object
             JSONObject response = baseJsonResponse.getJSONObject("response");
@@ -101,5 +185,43 @@ public class QueryUtils {
 
         // Return the list of news
         return news;
+    }
+
+    /**
+     * Query the Guardian dataset and return a list of {@link News} objects.
+     */
+    public static List<News> fetchNewsData(String requestUrl) {
+
+        //Log.i(LOG_TAG, "TEST: fetchNewsData() called ...");
+
+        // Create URL object
+        URL url = createUrl(requestUrl);
+
+        // Perform HTTP request to the URL and receive a JSON response back
+        String jsonResponse = null;
+        try {
+            jsonResponse = makeHttpRequest(url);
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Problem making the HTTP request", e);
+        }
+
+        // Extract relevant fields from the JSON response and create an {@link Event} object
+        List<News> news = extractFeatureFromJson(jsonResponse);
+
+        // Return the list of {@link News}s
+        return news;
+    }
+
+    /**
+     * Returns new URL object from the given string URL.
+     */
+    private static URL createUrl(String stringUrl) {
+        URL url = null;
+        try {
+            url = new URL(stringUrl);
+        } catch (MalformedURLException e) {
+            Log.e(LOG_TAG, "Error with creating URL ", e);
+        }
+        return url;
     }
 }
