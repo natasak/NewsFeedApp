@@ -21,7 +21,7 @@ public class News {
     /**
      * Create a new News object
      */
-    public News(String title, String section, String author, String date) {
+    public News(String section, String date, String title, String author) {
         mTitle = title;
         mSection = section;
         mAuthor = author;

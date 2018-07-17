@@ -57,6 +57,8 @@ public class QueryUtils {
 
                 // Extract "webPublicationDate"
                 String webPublicationDate = currentArticle.getString("webPublicationDate");
+                // Delete last 10 characters from the date string
+                webPublicationDate = webPublicationDate.substring(0, webPublicationDate.length() - 10);
 
                 // Extract "webTitle"
                 String webTitle = currentArticle.getString("webTitle");
@@ -67,11 +69,17 @@ public class QueryUtils {
                 // Get "tags" JSONArray
                 JSONArray authorArray = currentArticle.getJSONArray("tags");
 
-                // Get author in the authorArray (there is only 1
-                JSONObject currentAuthor = authorArray.getJSONObject(0);
+                // Get author in the authorArray (there is only 1), if there is any
+                String author;
+                if (authorArray.length() != 0) {
+                    JSONObject currentAuthor = authorArray.getJSONObject(0);
 
-                // Extract author - "webTitle"
-                String author = currentAuthor.getString("webTitle");
+                    // Extract author - "webTitle"
+                    author = currentAuthor.getString("webTitle");
+                } else {
+                    author = "";
+                }
+                
 
                 // Create News java object
                 News article = new News(sectionName, webPublicationDate, webTitle, author);
