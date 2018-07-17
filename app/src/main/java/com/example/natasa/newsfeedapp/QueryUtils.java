@@ -82,7 +82,7 @@ public class QueryUtils {
 
 
                 // Create News java object
-                News article = new News(sectionName, webPublicationDate, webTitle, author);
+                News article = new News(sectionName, webPublicationDate, webTitle, author, webUrl);
 
                 // Add article to list of news
                 news.add(article);

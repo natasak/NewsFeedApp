@@ -18,14 +18,18 @@ public class News {
     // date published
     private String mDate;
 
+    // URL
+    private String mUrl;
+
     /**
      * Create a new News object
      */
-    public News(String section, String date, String title, String author) {
+    public News(String section, String date, String title, String author, String url) {
         mTitle = title;
         mSection = section;
         mAuthor = author;
         mDate = date;
+        mUrl = url;
     }
 
     // Get the title
@@ -46,5 +50,11 @@ public class News {
     // Get date
     public String getDate() {
         return mDate;
+    }
+
+    // Get URL
+
+    public String getUrl() {
+        return mUrl;
     }
 }
