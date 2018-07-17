@@ -26,7 +26,6 @@ import static com.example.natasa.newsfeedapp.MainActivity.LOG_TAG;
 
 public class QueryUtils {
 
-
     /**
      * Create a private constructor because no one should ever create a {@link QueryUtils} object.
      * This class is only meant to hold static variables and methods, which can be accessed
@@ -79,7 +78,6 @@ public class QueryUtils {
         return jsonResponse;
     }
 
-
     /**
      * Convert the {@link InputStream} into a String which contains the
      * whole JSON response from the server.
@@ -97,11 +95,6 @@ public class QueryUtils {
         }
         return output.toString();
     }
-
-
-
-
-
 
     /**
      * Return a list of {@link News} objects that has been built up from
@@ -164,17 +157,12 @@ public class QueryUtils {
                     author = "";
                 }
 
-
                 // Create News java object
                 News article = new News(sectionName, webPublicationDate, webTitle, author, webUrl);
 
                 // Add article to list of news
                 news.add(article);
-
-
-
             }
-
 
         } catch (JSONException e) {
             // If an error is thrown when executing any of the above statements in the "try" block,
@@ -191,8 +179,6 @@ public class QueryUtils {
      * Query the Guardian dataset and return a list of {@link News} objects.
      */
     public static List<News> fetchNewsData(String requestUrl) {
-
-        //Log.i(LOG_TAG, "TEST: fetchNewsData() called ...");
 
         // Create URL object
         URL url = createUrl(requestUrl);
