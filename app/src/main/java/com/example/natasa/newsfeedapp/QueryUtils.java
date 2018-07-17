@@ -79,7 +79,7 @@ public class QueryUtils {
                 } else {
                     author = "";
                 }
-                
+
 
                 // Create News java object
                 News article = new News(sectionName, webPublicationDate, webTitle, author);
