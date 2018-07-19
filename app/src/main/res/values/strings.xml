@@ -15,7 +15,7 @@
 
     <!-- Strings For Order-By Preference -->
     <string name="settings_order_by_label">Order By</string>
-    <string name="settings_order_by_key" translatable="false">order_by</string>
+    <string name="settings_order_by_key" translatable="false">order-by</string>
     <string name="settings_order_by_default" translatable="false">@string/settings_order_by_newest_value</string>
 
     <!-- Label for order-by newest option -->
