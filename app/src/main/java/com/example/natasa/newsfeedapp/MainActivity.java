@@ -5,9 +5,11 @@ import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -28,7 +30,9 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<L
     private static final String apiKey = BuildConfig.ApiKey;
 
     // URL for news data from the guardian dataset
-    private static final String GUARDIAN_REQUEST_URL = "https://content.guardianapis.com/search?section=travel&order-by=newest&show-tags=contributor&api-key=".concat(apiKey);
+    // "https://content.guardianapis.com/search?section=travel&order-by=newest&show-tags=contributor&api-key=".concat(apiKey);
+    private static final String GUARDIAN_REQUEST_URL = "https://content.guardianapis.com/search";
+
 
     /** Adapter for the list of articles */
     private NewsAdapter mAdapter;
@@ -114,8 +118,27 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<L
 
     @Override
     public Loader<List<News>> onCreateLoader(int i, Bundle bundle) {
-        // Create a new loader for the given URL
-        return new NewsLoader(this, GUARDIAN_REQUEST_URL);
+        // Create a new loader for the given ID
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        // getString retrieves a String value from the preferences. The second parameter is the default value
+        // for this preference.
+        String orderBy = sharedPrefs.getString(getString(R.string.settings_order_by_key), getString(R.string.settings_order_by_default));
+
+        // parse breaks apart the URI string that's passed into ts parameter
+        Uri baseUri = Uri.parse(GUARDIAN_REQUEST_URL);
+
+        // buildUpon prepares the baseUri that we just parsed so we can add query parameters to it
+        Uri.Builder uriBuilder = baseUri.buildUpon();
+
+        // Append query parameter and its value
+        uriBuilder.appendQueryParameter("section", "travel");
+        uriBuilder.appendQueryParameter("order-by", orderBy);
+        uriBuilder.appendQueryParameter("show-tags", "contributor");
+        uriBuilder.appendQueryParameter("api-key", apiKey);
+
+        // Return the completed URI
+        return new NewsLoader(this, uriBuilder.toString());
     }
 
     @Override
