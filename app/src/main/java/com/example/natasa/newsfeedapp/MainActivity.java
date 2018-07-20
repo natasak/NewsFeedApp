@@ -22,7 +22,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements LoaderCallbacks<List<News>> {
+public class MainActivity extends AppCompatActivity implements LoaderCallbacks<List<News>>, SharedPreferences.OnSharedPreferenceChangeListener {
 
     public static final String LOG_TAG = MainActivity.class.getName();
 
@@ -64,6 +64,14 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<L
 
         // Attach the adapter to the listView
         listView.setAdapter(mAdapter);
+
+        // Obtain a reference to the SharedPreferences file for this app
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        // And register to be notified of preference changes
+        // So we know when the user has adjusted the query settings
+        prefs.registerOnSharedPreferenceChangeListener(this);
+
+
 
         // When the item in news list is clicked, open the correct website
         // for that article
@@ -125,6 +133,8 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<L
         // for this preference.
         String orderBy = sharedPrefs.getString(getString(R.string.settings_order_by_key), getString(R.string.settings_order_by_default));
 
+        String section = sharedPrefs.getString(getString(R.string.settings_section_key), getString(R.string.settings_section_default));
+
         // parse breaks apart the URI string that's passed into ts parameter
         Uri baseUri = Uri.parse(GUARDIAN_REQUEST_URL);
 
@@ -132,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<L
         Uri.Builder uriBuilder = baseUri.buildUpon();
 
         // Append query parameter and its value
-        uriBuilder.appendQueryParameter("section", "travel");
+        uriBuilder.appendQueryParameter("section", section);
         uriBuilder.appendQueryParameter("order-by", orderBy);
         uriBuilder.appendQueryParameter("show-tags", "contributor");
         uriBuilder.appendQueryParameter("api-key", apiKey);
@@ -189,4 +199,24 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<L
         }
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+        if (key.equals(getString(R.string.settings_order_by_key)) || key.equals(getString(R.string.settings_section_key))) {
+            // Clear the ListView as a new query will be kicked off
+            mAdapter.clear();
+
+            // Hide the empty state text view as the loading indicator will be displayed
+            mEmptyStateTextView.setVisibility(View.GONE);
+
+            // Show the loading indicator while new data is being fetched
+            View loadingIndicator = findViewById(R.id.loading_spinner);
+            loadingIndicator.setVisibility(View.VISIBLE);
+
+            // Restart the loader to requery the Guardian as the query settings have been updated
+            getLoaderManager().restartLoader(NEWS_LOADER_ID, null, this);
+        }
+
+    }
+
 }

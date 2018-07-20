@@ -25,4 +25,21 @@
     <!-- Label for order-by relevance option -->
     <string name="settings_order_by_relevance_label">Relevance</string>
     <string name="settings_order_by_relevance_value" translatable="false">relevance</string>
+
+    <!-- Strings for section Preference -->
+    <string name="settings_section_label">Section</string>
+    <string name="settings_section_key" translatable="false">section</string>
+    <string name="settings_section_default" translatable="false">@string/settings_section_travel_value</string>
+
+    <!-- Label for section travel option -->
+    <string name="settings_section_travel_label">Travel</string>
+    <string name="settings_section_travel_value" translatable="false">travel</string>
+
+    <!-- Label for section sport option  -->
+    <string name="settings_section_sport_label">Sport</string>
+    <string name="settings_section_sport_value" translatable="false">sport</string>
+
+    <!-- Label for section business option  -->
+    <string name="settings_section_business_label">Business</string>
+    <string name="settings_section_business_value" translatable="false">business</string>
 </resources>
