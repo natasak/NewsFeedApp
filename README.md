@@ -5,4 +5,6 @@ An app gives a user regularly-updated news from the internet, using Guardian API
 
 # Screenshots
 
-
+| List of articles | Order-by Setting | Section Setting |
+| ------------------------ | ------------------ | ------------------ |
+| ![List](https://github.com/natasak/NewsFeedApp/blob/master/screenshots/newsfeedapp1.png) | ![OrderBy](https://github.com/natasak/NewsFeedApp/blob/master/screenshots/newsfeedapp2.png) | ![Section](https://github.com/natasak/NewsFeedApp/blob/master/screenshots/newsfeedapp3.png) |
