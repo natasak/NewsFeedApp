@@ -200,6 +200,7 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<L
         return super.onOptionsItemSelected(item);
     }
 
+    // Update the news list when user changes preference (settings)
     @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         if (key.equals(getString(R.string.settings_order_by_key)) || key.equals(getString(R.string.settings_section_key))) {
