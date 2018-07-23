@@ -134,18 +134,18 @@ public class QueryUtils {
                 JSONObject currentArticle = newsArray.getJSONObject(i);
 
                 // Extract "sectionName"
-                String sectionName = currentArticle.getString("sectionName");
+                String sectionName = currentArticle.optString("sectionName");
 
                 // Extract "webPublicationDate"
-                String webPublicationDate = currentArticle.getString("webPublicationDate");
+                String webPublicationDate = currentArticle.optString("webPublicationDate");
                 // Delete last 10 characters from the date string
                 webPublicationDate = webPublicationDate.substring(0, webPublicationDate.length() - 10);
 
                 // Extract "webTitle"
-                String webTitle = currentArticle.getString("webTitle");
+                String webTitle = currentArticle.optString("webTitle");
 
                 // Extract "webUrl"
-                String webUrl = currentArticle.getString("webUrl");
+                String webUrl = currentArticle.optString("webUrl");
 
                 // Get "tags" JSONArray
                 JSONArray authorArray = currentArticle.getJSONArray("tags");
@@ -156,7 +156,7 @@ public class QueryUtils {
                     JSONObject currentAuthor = authorArray.getJSONObject(0);
 
                     // Extract author - "webTitle"
-                    author = currentAuthor.getString("webTitle");
+                    author = currentAuthor.optString("webTitle");
                 } else {
                     author = "";
                 }
